@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version (e.g., 0.0.2)'
-        required: true
-        type: string
 
 jobs:
   build:
@@ -35,29 +30,38 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ide-event-sounds-plugin-${{ github.run_number }}
+        name: ide-event-sounds-plugin
         path: packages/intellij/build/libs/ide-event-sounds-*.jar
         retention-days: 5
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ide-event-sounds-plugin
+
     - name: Create Release
-      if: github.event_name == 'workflow_dispatch'
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: v${{ inputs.version }}
-        release_name: IDE Event Sounds v${{ inputs.version }}
+        tag_name: v${{ github.run_number }}
+        release_name: IDE Event Sounds v${{ github.run_number }}
         draft: false
         prerelease: false
 
     - name: Upload to Release
-      if: github.event_name == 'workflow_dispatch'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: packages/intellij/build/libs/ide-event-sounds-*.jar
-        asset_name: ide-event-sounds-${{ inputs.version }}.jar
+        asset_path: ide-event-sounds-*.jar
+        asset_name: ide-event-sounds-${{ github.run_number }}.jar
         asset_content_type: application/java-archive
