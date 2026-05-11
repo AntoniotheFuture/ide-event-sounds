@@ -2,7 +2,7 @@
   "project": {
     "name": "IDE Event Sounds",
     "description": "为 IDE 平台提供事件声音自定义功能，让开发者通过专属语音/音效感知 IDE 关键事件",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "groupId": "com.antoniofuture.ideeventsounds"
   },
   "author": {

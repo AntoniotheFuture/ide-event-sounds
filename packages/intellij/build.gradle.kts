@@ -60,6 +60,16 @@ tasks {
         changeNotes.set("""
             <h3>${project.version}</h3>
             <ul>
+                <li>新增项目打开事件提示音</li>
+                <li>修复声音播放问题（clip.open 缺失）</li>
+                <li>修复沙箱权限问题（直接读取资源文件）</li>
+                <li>添加 BufferedInputStream 支持 mark/reset</li>
+                <li>优化事件匹配逻辑，避免重复触发</li>
+                <li>支持新语音播放时停止当前播放</li>
+                <li>添加 GitHub Actions 自动构建和发布</li>
+            </ul>
+            <h3>0.0.1</h3>
+            <ul>
                 <li>初始版本发布</li>
                 <li>支持 7 个核心高频事件</li>
                 <li>内置预设声音</li>
