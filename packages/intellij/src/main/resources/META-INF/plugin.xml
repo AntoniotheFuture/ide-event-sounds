@@ -1,0 +1,47 @@
+<idea-plugin>
+    <!-- 插件 ID 由 build.gradle.kts 动态注入 -->
+    <id>com.antoniofuture.ideeventsounds.intellij</id>
+    
+    <!-- 版本号由 build.gradle.kts 动态注入 -->
+    <name>IDE Event Sounds</name>
+    
+    <!-- 作者信息从统一配置读取 -->
+    <vendor email="antonioliang@Foxmail.com" url="https://github.com/antoniofuture/ide-event-sounds">Antonio Future</vendor>
+
+    <!-- 描述由 build.gradle.kts 动态注入 -->
+    <description><![CDATA[
+    <h2>IDE Event Sounds</h2>
+    <p>为 IntelliJ 平台 IDE 提供事件声音自定义功能，让开发者通过专属语音/音效感知 IDE 关键事件。</p>
+    <ul>
+        <li>构建成功/失败提示音</li>
+        <li>运行启动/终止提示音</li>
+        <li>编译完成提示音</li>
+        <li>测试通过/失败提示音</li>
+    </ul>
+    ]]></description>
+
+    <!-- 变更日志由 build.gradle.kts 动态注入 -->
+    <change-notes><![CDATA[
+    <h3>0.0.1</h3>
+    <ul>
+        <li>初始版本发布</li>
+        <li>支持 7 个核心高频事件</li>
+        <li>内置预设声音</li>
+    </ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.antoniofuture.ideeventsounds.intellij.plugin.EventSoundsPluginService"/>
+    </extensions>
+
+    <applicationListeners>
+        <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.ExecutionEventsListener" topic="com.intellij.execution.ExecutionListener"/>
+        <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.ProjectOpenListener" topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </applicationListeners>
+
+    <projectListeners>
+        <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.BuildEventsListener" topic="com.intellij.task.ProjectTaskListener"/>
+    </projectListeners>
+</idea-plugin>

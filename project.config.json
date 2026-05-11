@@ -1,0 +1,59 @@
+{
+  "project": {
+    "name": "IDE Event Sounds",
+    "description": "为 IDE 平台提供事件声音自定义功能，让开发者通过专属语音/音效感知 IDE 关键事件",
+    "version": "0.0.1",
+    "groupId": "com.antoniofuture.ideeventsounds"
+  },
+  "author": {
+    "name": "Antonio Future",
+    "email": "antonioliang@Foxmail.com",
+    "github": "https://github.com/antoniofuture/ide-event-sounds"
+  },
+  "packages": {
+    "core": {
+      "name": "core",
+      "description": "核心声音播放和事件匹配逻辑",
+      "packageName": "com.antoniofuture.ideeventsounds.core"
+    },
+    "intellij": {
+      "name": "intellij",
+      "description": "IntelliJ 平台插件",
+      "pluginId": "com.antoniofuture.ideeventsounds.intellij",
+      "packageName": "com.antoniofuture.ideeventsounds.intellij"
+    },
+    "vscode": {
+      "name": "vscode",
+      "description": "VSCode 扩展（预留）",
+      "packageName": "com.antoniofuture.ideeventsounds.vscode"
+    }
+  },
+  "events": [
+    { "id": "build.success", "name": "构建成功", "defaultSound": "build_success.wav" },
+    { "id": "build.failed", "name": "构建失败", "defaultSound": "build_failed.wav" },
+    { "id": "run.start", "name": "运行启动", "defaultSound": "run_start.wav" },
+    { "id": "run.stop", "name": "运行终止", "defaultSound": "run_stop.wav" },
+    { "id": "compile.finished", "name": "编译完成", "defaultSound": "compile_finished.wav" },
+    { "id": "test.passed", "name": "测试通过", "defaultSound": "test_passed.wav" },
+    { "id": "test.failed", "name": "测试失败", "defaultSound": "test_failed.wav" },
+    { "id": "project.opened", "name": "项目打开", "defaultSound": "project_opened.wav" }
+  ],
+  "soundPreset": {
+    "defaultPath": "~/.ide-event-sounds/preset/",
+    "files": [
+      "build_success.wav",
+      "build_failed.wav",
+      "run_start.wav",
+      "run_stop.wav",
+      "compile_finished.wav",
+      "test_passed.wav",
+      "test_failed.wav",
+      "project_opened.wav"
+    ]
+  },
+  "dependencies": {
+    "kotlinVersion": "1.9.22",
+    "intellijSdkVersion": "2023.3",
+    "javaVersion": "17"
+  }
+}

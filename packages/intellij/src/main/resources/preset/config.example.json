@@ -1,0 +1,48 @@
+{
+  "version": "0.0.1",
+  "enable": true,
+  "sounds": [
+    {
+      "eventKey": "build.success",
+      "soundPath": "preset/build_success.wav",
+      "name": "构建成功",
+      "regex": ""
+    },
+    {
+      "eventKey": "build.failed",
+      "soundPath": "preset/build_failed.wav",
+      "name": "构建失败",
+      "regex": ""
+    },
+    {
+      "eventKey": "run.start",
+      "soundPath": "preset/run_start.wav",
+      "name": "运行启动",
+      "regex": ""
+    },
+    {
+      "eventKey": "run.stop",
+      "soundPath": "preset/run_stop.wav",
+      "name": "运行终止",
+      "regex": ""
+    },
+    {
+      "eventKey": "compile.finished",
+      "soundPath": "preset/compile_finished.wav",
+      "name": "编译完成",
+      "regex": ""
+    },
+    {
+      "eventKey": "test.passed",
+      "soundPath": "preset/test_passed.wav",
+      "name": "测试成功",
+      "regex": ""
+    },
+    {
+      "eventKey": "test.failed",
+      "soundPath": "preset/test_failed.wav",
+      "name": "测试失败",
+      "regex": ""
+    }
+  ]
+}
