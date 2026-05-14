@@ -10,8 +10,8 @@
 | `build.failed` | 构建失败 | ✅ | ✅ |
 | `run.start` | 应用启动 | ✅ | ✅ |
 | `run.stop` | 应用停止 | ✅ | ✅ |
-| `test.passed` | 测试通过 | ✅ | ❌ |
-| `test.failed` | 测试失败 | ✅ | ❌ |
+| `test.passed` | 测试通过 | ✅ | ✅ |
+| `test.failed` | 测试失败 | ✅ | ✅ |
 
 ---
 
@@ -31,8 +31,8 @@
 
 | Event Key | 事件描述 | 默认启用 | 已实现 |
 |-----------|----------|----------|--------|
-| `debug.started` | 调试会话开始 | ❌ | 🔄 |
-| `debug.stopped` | 调试会话停止 | ❌ | 🔄 |
+| `debug.started` | 调试会话开始 | ❌ | ✅ |
+| `debug.stopped` | 调试会话停止 | ❌ | ✅ |
 | `compile.finished` | 编译完成 | ❌ | ❌ |
 
 ---
@@ -54,11 +54,10 @@
 |-----------|----------|----------|--------|
 | `file.created` | 文件创建 | ❌ | ✅ |
 | `file.deleted` | 文件删除 | ❌ | ✅ |
+| `file.saved` | 文件保存 | ❌ | ✅ |
+| `file.renamed` | 文件重命名 | ❌ | ✅ |
 | `file.moved` | 文件移动 | ❌ | ❌ |
 | `file.copied` | 文件复制 | ❌ | ❌ |
-| `file.renamed` | 文件重命名 | ❌ | ❌ |
-| `file.saved` | 文件保存 | ❌ | ❌ |
-| `file.saved.sync` | 文件同步保存 | ❌ | ❌ |
 
 ---
 
@@ -136,9 +135,9 @@
       "isEnabled": true
     },
     {
-      "eventKey": "file.created",
-      "soundPath": "/Users/yourname/sounds/create.wav",
-      "name": "文件创建",
+      "eventKey": "file.saved",
+      "soundPath": "/Users/yourname/sounds/save.wav",
+      "name": "文件保存",
       "isCustom": true,
       "isEnabled": true
     }

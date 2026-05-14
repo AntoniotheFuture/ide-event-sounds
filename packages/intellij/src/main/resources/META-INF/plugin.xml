@@ -54,7 +54,6 @@
 
     <applicationListeners>
         <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.ExecutionEventsListener" topic="com.intellij.execution.ExecutionListener"/>
-        <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.DebugEventsListener" topic="com.intellij.execution.ExecutionListener"/>
         <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.ProjectOpenListener" topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
 

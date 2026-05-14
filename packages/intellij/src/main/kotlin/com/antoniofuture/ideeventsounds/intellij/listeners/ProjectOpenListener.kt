@@ -61,5 +61,33 @@ class ProjectOpenListener : ProjectManagerListener {
         } catch (e: Exception) {
             logger.error("DEBUG: Failed to create IndexingEventsListener for project ${project.name}: ${e.message}", e)
         }
+
+        // 注册测试事件监听器
+        try {
+            logger.error("DEBUG: Creating TestEventsListener for project: ${project.name}")
+            val testListener = TestEventsListener(project)
+            val messageBus = project.messageBus.connect()
+            messageBus.subscribe(TestEventsListener.TOPIC, testListener)
+            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
+                messageBus.dispose()
+            })
+            logger.error("DEBUG: TestEventsListener registered successfully for project: ${project.name}")
+        } catch (e: Exception) {
+            logger.error("DEBUG: Failed to create TestEventsListener for project ${project.name}: ${e.message}", e)
+        }
+
+        // 注册调试事件监听器
+        try {
+            logger.error("DEBUG: Creating DebugEventsListener for project: ${project.name}")
+            val debugListener = DebugEventsListener(project)
+            val messageBus = project.messageBus.connect()
+            messageBus.subscribe(com.intellij.execution.ExecutionListener.TOPIC, debugListener)
+            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
+                messageBus.dispose()
+            })
+            logger.error("DEBUG: DebugEventsListener registered successfully for project: ${project.name}")
+        } catch (e: Exception) {
+            logger.error("DEBUG: Failed to create DebugEventsListener for project ${project.name}: ${e.message}", e)
+        }
     }
 }

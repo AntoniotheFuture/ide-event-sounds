@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileEvent
 import com.intellij.openapi.vfs.VirtualFileListener
+import com.intellij.openapi.vfs.VirtualFilePropertyEvent
 import com.intellij.openapi.diagnostic.logger
 
 class ProjectFileListener(private val project: Project) : VirtualFileListener {
@@ -31,16 +32,24 @@ class ProjectFileListener(private val project: Project) : VirtualFileListener {
         processFileEvent(event, "file.deleted")
     }
 
+    override fun contentsChanged(event: VirtualFileEvent) {
+        processFileEvent(event, "file.saved")
+    }
+
+    override fun propertyChanged(event: VirtualFilePropertyEvent) {
+        if (event.propertyName == "name") {
+            processFileRenameEvent(event, "file.renamed")
+        }
+    }
+
     private fun processFileEvent(event: VirtualFileEvent, eventType: String) {
         val file = event.file ?: return
         val path = file.canonicalPath ?: return
 
-        // 过滤掉系统文件和临时文件
         if (isSystemFile(path)) {
             return
         }
 
-        // 只处理项目内的文件
         if (!isInProject(path)) {
             return
         }
@@ -49,6 +58,29 @@ class ProjectFileListener(private val project: Project) : VirtualFileListener {
             logger.error("DEBUG: File event detected: $eventType - ${file.name}")
             val service = project.service<EventSoundsPluginService>()
             service.triggerEvent(eventType, "File $eventType: ${file.name}")
+        } catch (e: Exception) {
+            logger.error("Failed to trigger $eventType: ${e.message}", e)
+        }
+    }
+
+    private fun processFileRenameEvent(event: VirtualFilePropertyEvent, eventType: String) {
+        val file = event.file ?: return
+        val path = file.canonicalPath ?: return
+
+        if (isSystemFile(path)) {
+            return
+        }
+
+        if (!isInProject(path)) {
+            return
+        }
+
+        try {
+            val oldName = event.oldValue?.toString() ?: ""
+            val newName = event.newValue?.toString() ?: file.name
+            logger.error("DEBUG: File event detected: $eventType - $oldName -> $newName")
+            val service = project.service<EventSoundsPluginService>()
+            service.triggerEvent(eventType, "File renamed: $oldName -> $newName")
         } catch (e: Exception) {
             logger.error("Failed to trigger $eventType: ${e.message}", e)
         }

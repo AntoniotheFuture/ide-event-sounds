@@ -16,21 +16,17 @@ class GitEventsListener(private val project: Project) {
 
     private fun subscribe() {
         try {
-            // 获取 MessageBusConnection
             val messageBus = project.javaClass.getMethod("getMessageBus").invoke(project)
             connection = messageBus.javaClass.getMethod("connect").invoke(messageBus)
 
-            // 获取 GitCommandListener.TOPIC
             val gitCommandListenerClass = Class.forName("git4idea.commands.GitCommandListener")
             val topicField = gitCommandListenerClass.getDeclaredField("TOPIC")
             val topic = topicField.get(null)
 
-            // 创建监听器代理 - 简化版本，避免在回调中调用 service()
             val listener = object : Any() {
                 @Suppress("unused")
                 fun commandStarted(command: Any) {
-                    val commandName = command.toString()
-                    println("[IDE Event Sounds] Git command started: $commandName")
+                    handleCommandStarted(command)
                 }
 
                 @Suppress("unused")
@@ -44,7 +40,6 @@ class GitEventsListener(private val project: Project) {
                 }
             }
 
-            // 使用反射调用 subscribe
             connection?.javaClass?.getMethod("subscribe", Class.forName("com.intellij.util.messages.Topic"), Any::class.java)
                 ?.invoke(connection, topic, listener)
 
@@ -53,12 +48,23 @@ class GitEventsListener(private val project: Project) {
         }
     }
 
+    private fun handleCommandStarted(command: Any) {
+        val commandName = command.toString()
+        println("[IDE Event Sounds] Git command started: $commandName")
+
+        try {
+            val service = project.service<EventSoundsPluginService>()
+            service.triggerEvent("git.$commandName.started", "$commandName started")
+        } catch (e: Exception) {
+            println("[IDE Event Sounds] Failed to trigger started event: ${e.message}")
+        }
+    }
+
     private fun handleCommandFinished(command: Any, success: Boolean) {
         val commandName = command.toString()
         val status = if (success) "success" else "failed"
         println("[IDE Event Sounds] Git command $commandName: $status")
 
-        // 延迟获取 service，避免在回调中死锁
         try {
             val service = project.service<EventSoundsPluginService>()
             if (success) {
