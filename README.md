@@ -8,6 +8,7 @@
 - ✅ 内置预设声音（可自定义替换）
 - ✅ 本地配置文件持久化（JSON 格式）
 - ✅ 轻量级无侵入，后台静默运行
+- ✅ 支持 40+ IntelliJ 原生事件（详见 [事件 Key 速查表](./docs/EVENT_KEYS.md)）
 - 🚧 自定义事件绑定（0.0.2 版本）
 - 🚧 正则匹配消息内容（0.0.3 版本）
 
@@ -55,14 +56,16 @@ ide-event-sounds/
 
 ```json
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "enable": true,
   "sounds": [
     {
       "eventKey": "build.success",
       "soundPath": "preset/build_success.wav",
       "name": "构建成功",
-      "regex": ""
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
     }
   ]
 }
@@ -70,8 +73,8 @@ ide-event-sounds/
 
 ## 开发计划
 
-- [x] 0.0.1 - 基础可用版（当前）
-- [ ] 0.0.2 - 自定义扩展版
+- [x] 0.0.1 - 基础可用版
+- [x] 0.0.2 - 自定义扩展版（当前）
 - [ ] 0.0.3 - 高级匹配版
 
 ## 许可证

@@ -5,9 +5,21 @@ import com.google.gson.GsonBuilder
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class ConfigManager {
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    private var cachedConfig: SoundConfig? = null
+    private val lock = ReentrantReadWriteLock()
+
+    private fun isDebugMode(): Boolean {
+        return System.getProperty("project.config") != null
+    }
+
+    private fun getDebugConfigFile(): File? {
+        val configPath = System.getProperty("project.config")
+        return if (configPath != null) File(configPath) else null
+    }
 
     fun getConfigDir(): File {
         val userHome = System.getProperty("user.home")
@@ -15,22 +27,54 @@ class ConfigManager {
     }
 
     fun getConfigFile(): File {
+        if (isDebugMode()) {
+            val debugConfig = getDebugConfigFile()
+            if (debugConfig != null && debugConfig.exists()) {
+                println("[ConfigManager] Using debug config: ${debugConfig.absolutePath}")
+                return debugConfig
+            }
+        }
         return File(getConfigDir(), "config.json")
     }
 
     fun loadConfig(): SoundConfig {
-        val configFile = getConfigFile()
-        return if (configFile.exists()) {
-            try {
-                FileReader(configFile).use { reader ->
-                    val config = gson.fromJson(reader, SoundConfig::class.java)
-                    return upgradeConfig(config)
+        // 优先使用缓存
+        lock.readLock().lock()
+        try {
+            if (cachedConfig != null) {
+                return cachedConfig!!
+            }
+        } finally {
+            lock.readLock().unlock()
+        }
+
+        // 缓存为空，需要读取
+        lock.writeLock().lock()
+        try {
+            // 双重检查
+            if (cachedConfig != null) {
+                return cachedConfig!!
+            }
+
+            val configFile = getConfigFile()
+            val config = if (configFile.exists()) {
+                try {
+                    FileReader(configFile).use { reader ->
+                        val loaded = gson.fromJson(reader, SoundConfig::class.java)
+                        upgradeConfig(loaded)
+                    }
+                } catch (e: Exception) {
+                    println("[ConfigManager] Error loading config, using default: ${e.message}")
+                    createDefaultConfig()
                 }
-            } catch (e: Exception) {
+            } else {
                 createDefaultConfig()
             }
-        } else {
-            createDefaultConfig()
+
+            cachedConfig = config
+            return config
+        } finally {
+            lock.writeLock().unlock()
         }
     }
 
@@ -65,6 +109,13 @@ class ConfigManager {
 
     fun saveConfig(config: SoundConfig) {
         saveConfigSilently(config)
+        // 更新缓存
+        lock.writeLock().lock()
+        try {
+            cachedConfig = config
+        } finally {
+            lock.writeLock().unlock()
+        }
     }
 
     private fun saveConfigSilently(config: SoundConfig) {
@@ -102,5 +153,15 @@ class ConfigManager {
     fun getSoundMapping(eventKey: String): SoundMapping? {
         val config = loadConfig()
         return config.sounds.find { it.eventKey == eventKey }
+    }
+
+    // 提供一个刷新缓存的方法
+    fun refreshConfig() {
+        lock.writeLock().lock()
+        try {
+            cachedConfig = null
+        } finally {
+            lock.writeLock().unlock()
+        }
     }
 }

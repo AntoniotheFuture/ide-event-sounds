@@ -17,6 +17,10 @@ class SoundPlayer {
         println("[SoundPlayer] Initialized")
     }
 
+    private fun getResourcesDir(): String? {
+        return System.getProperty("project.resources")
+    }
+
     fun playSound(eventKey: String) {
         println("[SoundPlayer] playSound called for eventKey: $eventKey")
         
@@ -44,7 +48,14 @@ class SoundPlayer {
                 println("[SoundPlayer] Playing preset sound")
                 playPresetSound(soundPath.substring("preset/".length))
             } else {
-                val soundFile = File(soundPath)
+                // 尝试从资源目录加载
+                val resourceDir = getResourcesDir()
+                val soundFile = if (resourceDir != null) {
+                    File(resourceDir, soundPath)
+                } else {
+                    File(soundPath)
+                }
+                
                 println("[SoundPlayer] Resolved sound file: ${soundFile.absolutePath}, exists=${soundFile.exists()}")
                 
                 if (soundFile.exists()) {
@@ -52,7 +63,18 @@ class SoundPlayer {
                     playWavFile(soundFile)
                     println("[SoundPlayer] Play initiated")
                 } else {
-                    println("[SoundPlayer] Sound file does not exist: ${soundFile.absolutePath}")
+                    // 如果文件不存在，尝试从classpath资源加载
+                    println("[SoundPlayer] Sound file not found, trying classpath resource...")
+                    val resourcePath = "/$soundPath"
+                    val inputStream = javaClass.getResourceAsStream(resourcePath)
+                    if (inputStream != null) {
+                        println("[SoundPlayer] Found resource: $resourcePath")
+                        playFromStream(inputStream)
+                        println("[SoundPlayer] Play initiated from resource")
+                    } else {
+                        println("[SoundPlayer] Sound file does not exist: ${soundFile.absolutePath}")
+                        println("[SoundPlayer] Resource also not found: $resourcePath")
+                    }
                 }
             }
         } catch (e: Exception) {

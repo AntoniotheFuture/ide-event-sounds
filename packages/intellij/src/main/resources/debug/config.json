@@ -1,0 +1,254 @@
+{
+  "version": "0.0.2",
+  "enable": true,
+  "sounds": [
+    {
+      "eventKey": "build.success",
+      "soundPath": "sounds/build_success.wav",
+      "name": "构建成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "build.failed",
+      "soundPath": "sounds/build_failed.wav",
+      "name": "构建失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "run.start",
+      "soundPath": "sounds/run_start.wav",
+      "name": "运行启动",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "run.stop",
+      "soundPath": "sounds/run_stop.wav",
+      "name": "运行终止",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "test.passed",
+      "soundPath": "sounds/test_passed.wav",
+      "name": "测试成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "test.failed",
+      "soundPath": "sounds/test_failed.wav",
+      "name": "测试失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "debug.started",
+      "soundPath": "sounds/debug_started.wav",
+      "name": "调试开始",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "debug.stopped",
+      "soundPath": "sounds/debug_stopped.wav",
+      "name": "调试停止",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "compile.finished",
+      "soundPath": "sounds/compile_finished.wav",
+      "name": "编译完成",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "project.opened",
+      "soundPath": "sounds/project_opened.wav",
+      "name": "项目打开",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "application.starting",
+      "soundPath": "sounds/application_starting.wav",
+      "name": "IDE 启动中",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "application.loaded",
+      "soundPath": "sounds/application_loaded.wav",
+      "name": "IDE 加载完成",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "application.frame.created",
+      "soundPath": "sounds/frame_created.wav",
+      "name": "应用窗口创建",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "indexing.started",
+      "soundPath": "sounds/indexing_started.wav",
+      "name": "索引开始",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "indexing.finished",
+      "soundPath": "sounds/indexing_finished.wav",
+      "name": "索引完成",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.created",
+      "soundPath": "sounds/file_created.wav",
+      "name": "文件创建",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.deleted",
+      "soundPath": "sounds/file_deleted.wav",
+      "name": "文件删除",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.moved",
+      "soundPath": "sounds/file_moved.wav",
+      "name": "文件移动",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.renamed",
+      "soundPath": "sounds/file_renamed.wav",
+      "name": "文件重命名",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.saved",
+      "soundPath": "sounds/file_saved.wav",
+      "name": "文件保存",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.commit.success",
+      "soundPath": "sounds/git_commit_success.wav",
+      "name": "Git 提交成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.commit.failed",
+      "soundPath": "sounds/git_commit_failed.wav",
+      "name": "Git 提交失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.push.success",
+      "soundPath": "sounds/git_push_success.wav",
+      "name": "Git 推送成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.push.failed",
+      "soundPath": "sounds/git_push_failed.wav",
+      "name": "Git 推送失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.pull.success",
+      "soundPath": "sounds/git_pull_success.wav",
+      "name": "Git 拉取成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.pull.failed",
+      "soundPath": "sounds/git_pull_failed.wav",
+      "name": "Git 拉取失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.branch.checkedout",
+      "soundPath": "sounds/git_branch_checkedout.wav",
+      "name": "Git 切换分支",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.merge.success",
+      "soundPath": "sounds/git_merge_success.wav",
+      "name": "Git 合并成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.merge.failed",
+      "soundPath": "sounds/git_merge_failed.wav",
+      "name": "Git 合并失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.rebase.success",
+      "soundPath": "sounds/git_rebase_success.wav",
+      "name": "Git 变基成功",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.rebase.failed",
+      "soundPath": "sounds/git_rebase_failed.wav",
+      "name": "Git 变基失败",
+      "regex": "",
+      "isCustom": false,
+      "isEnabled": true
+    }
+  ]
+}
