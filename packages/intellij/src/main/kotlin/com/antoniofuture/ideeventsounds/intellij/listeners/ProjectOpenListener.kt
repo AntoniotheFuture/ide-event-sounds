@@ -6,13 +6,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.diagnostic.logger
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class ProjectOpenListener : ProjectManagerListener {
     private val logger = logger<ProjectOpenListener>()
-    
+
     override fun projectOpened(project: Project) {
         logger.error("DEBUG: ProjectOpenListener.projectOpened called for: ${project.name}")
-        
+
         val service = service<EventSoundsPluginService>()
         service.triggerEvent("project.opened", "Project opened: ${project.name}")
 
@@ -30,8 +32,8 @@ class ProjectOpenListener : ProjectManagerListener {
         try {
             logger.error("DEBUG: Creating GitEventsListener for project: ${project.name}")
             val gitListener = GitEventsListener(project)
-            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
-                gitListener.dispose()
+            registerDisposable(project, object : Any() {
+                fun dispose() { gitListener.dispose() }
             })
             logger.error("DEBUG: GitEventsListener registered successfully for project: ${project.name}")
         } catch (e: Exception) {
@@ -42,8 +44,8 @@ class ProjectOpenListener : ProjectManagerListener {
         try {
             logger.error("DEBUG: Creating ApplicationLifecycleListener for project: ${project.name}")
             val appListener = ApplicationLifecycleListener(project)
-            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
-                appListener.dispose()
+            registerDisposable(project, object : Any() {
+                fun dispose() { appListener.dispose() }
             })
             logger.error("DEBUG: ApplicationLifecycleListener registered successfully for project: ${project.name}")
         } catch (e: Exception) {
@@ -54,40 +56,60 @@ class ProjectOpenListener : ProjectManagerListener {
         try {
             logger.error("DEBUG: Creating IndexingEventsListener for project: ${project.name}")
             val indexingListener = IndexingEventsListener(project)
-            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
-                indexingListener.dispose()
+            registerDisposable(project, object : Any() {
+                fun dispose() { indexingListener.dispose() }
             })
             logger.error("DEBUG: IndexingEventsListener registered successfully for project: ${project.name}")
         } catch (e: Exception) {
             logger.error("DEBUG: Failed to create IndexingEventsListener for project ${project.name}: ${e.message}", e)
         }
 
-        // 注册测试事件监听器
+        // 注册通知监听器（用于正则匹配测试）
         try {
-            logger.error("DEBUG: Creating TestEventsListener for project: ${project.name}")
-            val testListener = TestEventsListener(project)
-            val messageBus = project.messageBus.connect()
-            messageBus.subscribe(TestEventsListener.TOPIC, testListener)
-            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
-                messageBus.dispose()
-            })
-            logger.error("DEBUG: TestEventsListener registered successfully for project: ${project.name}")
-        } catch (e: Exception) {
-            logger.error("DEBUG: Failed to create TestEventsListener for project ${project.name}: ${e.message}", e)
-        }
+            logger.error("DEBUG: Creating NotificationReporter for project: ${project.name}")
+            val notificationReporter = NotificationReporter(project)
+            notificationReporter.startListening()
 
-        // 注册调试事件监听器
-        try {
-            logger.error("DEBUG: Creating DebugEventsListener for project: ${project.name}")
-            val debugListener = DebugEventsListener(project)
-            val messageBus = project.messageBus.connect()
-            messageBus.subscribe(com.intellij.execution.ExecutionListener.TOPIC, debugListener)
-            com.intellij.openapi.util.Disposer.register(project, com.intellij.openapi.util.Disposable {
-                messageBus.dispose()
+            // 启动5秒后发送测试通知
+            val executor = Executors.newSingleThreadScheduledExecutor()
+            executor.schedule({
+                try {
+                    logger.error("DEBUG: Sending test.notification event for regex test")
+                    notificationReporter.sendTestNotification()
+                    logger.error("DEBUG: test.notification event sent successfully")
+                } catch (e: Exception) {
+                    logger.error("DEBUG: Failed to send test.notification event: ${e.message}", e)
+                } finally {
+                    executor.shutdown()
+                }
+            }, 5, TimeUnit.SECONDS)
+
+            registerDisposable(project, object : Any() {
+                fun dispose() { notificationReporter.stopListening() }
             })
-            logger.error("DEBUG: DebugEventsListener registered successfully for project: ${project.name}")
+            logger.error("DEBUG: NotificationReporter registered successfully for project: ${project.name}")
         } catch (e: Exception) {
-            logger.error("DEBUG: Failed to create DebugEventsListener for project ${project.name}: ${e.message}", e)
+            logger.error("DEBUG: Failed to create NotificationReporter for project ${project.name}: ${e.message}", e)
+        }
+    }
+
+    private fun registerDisposable(project: Project, disposable: Any) {
+        try {
+            val disposerClass = Class.forName("com.intellij.openapi.util.Disposer")
+            val registerMethod = disposerClass.getMethod("register", Any::class.java, Class.forName("com.intellij.openapi.util.Disposable"))
+            val disposableClass = Class.forName("com.intellij.openapi.util.Disposable")
+            val proxy = java.lang.reflect.Proxy.newProxyInstance(
+                disposableClass.classLoader,
+                arrayOf(disposableClass)
+            ) { _, method, _ ->
+                if (method.name == "dispose") {
+                    disposable.javaClass.getMethod("dispose").invoke(disposable)
+                }
+                null
+            }
+            registerMethod.invoke(null, project, proxy)
+        } catch (e: Exception) {
+            logger.error("DEBUG: Failed to register disposable: ${e.message}", e)
         }
     }
 }
