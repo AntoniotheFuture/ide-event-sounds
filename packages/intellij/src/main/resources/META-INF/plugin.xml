@@ -22,6 +22,19 @@
 
     <!-- 变更日志由 build.gradle.kts 动态注入 -->
     <change-notes><![CDATA[
+    <h3>0.0.4</h3>
+    <ul>
+        <li>新增 Settings UI 配置界面</li>
+        <li>支持在设置界面添加/编辑/删除事件绑定</li>
+        <li>支持在设置界面配置正则匹配规则</li>
+        <li>支持测试播放声音预览</li>
+        <li>支持启用/禁用单个事件</li>
+    </ul>
+    <h3>0.0.3</h3>
+    <ul>
+        <li>支持通知消息正则匹配功能</li>
+        <li>新增测试通知发送功能</li>
+    </ul>
     <h3>0.0.2</h3>
     <ul>
         <li>支持自定义事件绑定和声音配置</li>
@@ -50,6 +63,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.antoniofuture.ideeventsounds.intellij.plugin.EventSoundsPluginService"/>
+        <configurable instance="com.antoniofuture.ideeventsounds.intellij.settings.EventSoundsConfigurable"/>
     </extensions>
 
     <applicationListeners>

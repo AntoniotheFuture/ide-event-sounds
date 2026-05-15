@@ -12,7 +12,7 @@ class SoundPlayer {
     private val configManager = com.antoniofuture.ideeventsounds.core.config.ConfigManager()
     private var currentClip: Clip? = null
     private val lock = Any()
-    
+
     init {
         println("[SoundPlayer] Initialized")
     }
@@ -23,10 +23,10 @@ class SoundPlayer {
 
     fun playSound(eventKey: String) {
         println("[SoundPlayer] playSound called for eventKey: $eventKey")
-        
+
         val config = configManager.loadConfig()
         println("[SoundPlayer] Config loaded, enable=${config.enable}")
-        
+
         if (!config.enable) {
             println("[SoundPlayer] Sound is disabled, skipping")
             return
@@ -34,7 +34,7 @@ class SoundPlayer {
 
         val soundMapping = configManager.getSoundMapping(eventKey)
         println("[SoundPlayer] Sound mapping for $eventKey: $soundMapping")
-        
+
         if (soundMapping == null) {
             println("[SoundPlayer] No sound mapping found for $eventKey")
             return
@@ -43,27 +43,25 @@ class SoundPlayer {
         try {
             val soundPath = soundMapping.soundPath
             println("[SoundPlayer] Sound path: $soundPath")
-            
+
             if (soundPath.startsWith("preset/")) {
                 println("[SoundPlayer] Playing preset sound")
                 playPresetSound(soundPath.substring("preset/".length))
             } else {
-                // 尝试从资源目录加载
                 val resourceDir = getResourcesDir()
                 val soundFile = if (resourceDir != null) {
                     File(resourceDir, soundPath)
                 } else {
                     File(soundPath)
                 }
-                
+
                 println("[SoundPlayer] Resolved sound file: ${soundFile.absolutePath}, exists=${soundFile.exists()}")
-                
+
                 if (soundFile.exists()) {
                     println("[SoundPlayer] Playing sound file...")
                     playWavFile(soundFile)
                     println("[SoundPlayer] Play initiated")
                 } else {
-                    // 如果文件不存在，尝试从classpath资源加载
                     println("[SoundPlayer] Sound file not found, trying classpath resource...")
                     val resourcePath = "/$soundPath"
                     val inputStream = javaClass.getResourceAsStream(resourcePath)
@@ -86,7 +84,7 @@ class SoundPlayer {
     private fun playPresetSound(fileName: String) {
         val resourcePath = "/preset/$fileName"
         println("[SoundPlayer] Loading preset sound from resource: $resourcePath")
-        
+
         val inputStream = javaClass.getResourceAsStream(resourcePath)
         if (inputStream != null) {
             println("[SoundPlayer] Resource found, playing...")
@@ -118,7 +116,7 @@ class SoundPlayer {
                 }
             }
         }
-        
+
         clip.open(audioInputStream)
         clip.start()
     }
@@ -160,8 +158,16 @@ class SoundPlayer {
                 }
             }
         }
-        
+
         clip.open(audioInputStream)
         clip.start()
+    }
+
+    fun playFromFile(file: File) {
+        if (!file.exists()) {
+            println("[SoundPlayer] File does not exist: ${file.absolutePath}")
+            return
+        }
+        playWavFile(file)
     }
 }

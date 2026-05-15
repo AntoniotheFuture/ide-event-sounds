@@ -40,6 +40,11 @@ intellij {
 }
 
 tasks {
+    // 确保 jar 任务输出正确命名的文件
+    jar {
+        archiveFileName.set("ide-event-sounds-${project.version}.jar")
+    }
+
     // 调试配置源目录
     val debugResourcesDir = file("src/main/resources/debug")
 
