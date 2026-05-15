@@ -6,6 +6,6 @@ import com.intellij.openapi.project.Project
 
 class TestEventsListener(private val project: Project) {
     companion object {
-        // 简化实现，移除事件订阅
+        // 简化实现，兼容IntelliJ 2021.1
     }
 }

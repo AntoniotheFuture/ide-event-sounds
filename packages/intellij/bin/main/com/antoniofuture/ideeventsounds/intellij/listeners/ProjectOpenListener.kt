@@ -6,8 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.diagnostic.logger
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 class ProjectOpenListener : ProjectManagerListener {
     private val logger = logger<ProjectOpenListener>()
@@ -64,32 +62,28 @@ class ProjectOpenListener : ProjectManagerListener {
             logger.error("DEBUG: Failed to create IndexingEventsListener for project ${project.name}: ${e.message}", e)
         }
 
-        // 注册通知监听器（用于正则匹配测试）
+        // 注册测试事件监听器
         try {
-            logger.error("DEBUG: Creating NotificationReporter for project: ${project.name}")
-            val notificationReporter = NotificationReporter(project)
-            notificationReporter.startListening()
-
-            // 启动5秒后发送测试通知
-            val executor = Executors.newSingleThreadScheduledExecutor()
-            executor.schedule({
-                try {
-                    logger.error("DEBUG: Sending test.notification event for regex test")
-                    notificationReporter.sendTestNotification()
-                    logger.error("DEBUG: test.notification event sent successfully")
-                } catch (e: Exception) {
-                    logger.error("DEBUG: Failed to send test.notification event: ${e.message}", e)
-                } finally {
-                    executor.shutdown()
-                }
-            }, 5, TimeUnit.SECONDS)
-
+            logger.error("DEBUG: Creating TestEventsListener for project: ${project.name}")
+            val testListener = TestEventsListener(project)
             registerDisposable(project, object : Any() {
-                fun dispose() { notificationReporter.stopListening() }
+                fun dispose() { }
             })
-            logger.error("DEBUG: NotificationReporter registered successfully for project: ${project.name}")
+            logger.error("DEBUG: TestEventsListener registered successfully for project: ${project.name}")
         } catch (e: Exception) {
-            logger.error("DEBUG: Failed to create NotificationReporter for project ${project.name}: ${e.message}", e)
+            logger.error("DEBUG: Failed to create TestEventsListener for project ${project.name}: ${e.message}", e)
+        }
+
+        // 注册调试事件监听器
+        try {
+            logger.error("DEBUG: Creating DebugEventsListener for project: ${project.name}")
+            val debugListener = DebugEventsListener(project)
+            registerDisposable(project, object : Any() {
+                fun dispose() { }
+            })
+            logger.error("DEBUG: DebugEventsListener registered successfully for project: ${project.name}")
+        } catch (e: Exception) {
+            logger.error("DEBUG: Failed to create DebugEventsListener for project ${project.name}: ${e.message}", e)
         }
     }
 
