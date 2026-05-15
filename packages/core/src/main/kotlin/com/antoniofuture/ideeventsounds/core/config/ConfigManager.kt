@@ -79,6 +79,20 @@ class ConfigManager {
     }
 
     private fun upgradeConfig(existingConfig: SoundConfig): SoundConfig {
+        // 版本升级逻辑
+        var config = existingConfig
+        
+        // 从 0.0.1 升级到 0.0.2
+        if (config.version == "0.0.1") {
+            config = upgradeTo002(config)
+        }
+        
+        // 从 0.0.2 升级到 0.0.3
+        if (config.version == "0.0.2") {
+            config = upgradeTo003(config)
+        }
+        
+        // 添加缺失的默认事件
         val defaultSounds = listOf(
             SoundMapping("build.success", "preset/build_success.wav", "构建成功"),
             SoundMapping("build.failed", "preset/build_failed.wav", "构建失败"),
@@ -87,24 +101,60 @@ class ConfigManager {
             SoundMapping("compile.finished", "preset/compile_finished.wav", "编译完成"),
             SoundMapping("test.passed", "preset/test_passed.wav", "测试成功"),
             SoundMapping("test.failed", "preset/test_failed.wav", "测试失败"),
-            SoundMapping("project.opened", "preset/project_opened.wav", "项目打开")
+            SoundMapping("project.opened", "preset/project_opened.wav", "项目打开"),
+            SoundMapping("debug.started", "preset/debug_started.wav", "调试开始"),
+            SoundMapping("debug.stopped", "preset/debug_stopped.wav", "调试停止"),
+            SoundMapping("file.created", "preset/file_created.wav", "文件创建"),
+            SoundMapping("file.deleted", "preset/file_deleted.wav", "文件删除"),
+            SoundMapping("file.saved", "preset/file_saved.wav", "文件保存"),
+            SoundMapping("file.renamed", "preset/file_renamed.wav", "文件重命名"),
+            SoundMapping("git.COMMIT.success", "preset/git_commit.wav", "Git提交成功"),
+            SoundMapping("git.PULL.success", "preset/git_pull.wav", "Git拉取成功"),
+            SoundMapping("git.PUSH.success", "preset/git_push.wav", "Git推送成功")
         )
 
-        val existingKeys = existingConfig.sounds.map { it.eventKey }.toSet()
+        val existingKeys = config.sounds.map { it.eventKey }.toSet()
         val missingSounds = defaultSounds.filter { !existingKeys.contains(it.eventKey) }
 
         if (missingSounds.isNotEmpty()) {
-            val updatedSounds = existingConfig.sounds + missingSounds
-            val updatedConfig = SoundConfig(
-                version = existingConfig.version,
-                enable = existingConfig.enable,
+            val updatedSounds = config.sounds + missingSounds
+            config = SoundConfig(
+                version = config.version,
+                enable = config.enable,
                 sounds = updatedSounds
             )
-            saveConfigSilently(updatedConfig)
-            return updatedConfig
         }
 
-        return existingConfig
+        if (config.version != "0.0.3") {
+            config = SoundConfig(
+                version = "0.0.3",
+                enable = config.enable,
+                sounds = config.sounds
+            )
+            saveConfigSilently(config)
+        }
+
+        return config
+    }
+
+    private fun upgradeTo002(config: SoundConfig): SoundConfig {
+        return SoundConfig(
+            version = "0.0.2",
+            enable = config.enable,
+            sounds = config.sounds
+        )
+    }
+
+    private fun upgradeTo003(config: SoundConfig): SoundConfig {
+        // 添加regex字段支持（默认空字符串）
+        val updatedSounds = config.sounds.map {
+            if (it.regex.isEmpty()) it else it
+        }
+        return SoundConfig(
+            version = "0.0.3",
+            enable = config.enable,
+            sounds = updatedSounds
+        )
     }
 
     fun saveConfig(config: SoundConfig) {
@@ -135,7 +185,7 @@ class ConfigManager {
 
     private fun createDefaultConfig(): SoundConfig {
         return SoundConfig(
-            version = "0.0.1",
+            version = "0.0.3",
             enable = true,
             sounds = listOf(
                 SoundMapping("build.success", "preset/build_success.wav", "构建成功"),
@@ -145,7 +195,19 @@ class ConfigManager {
                 SoundMapping("compile.finished", "preset/compile_finished.wav", "编译完成"),
                 SoundMapping("test.passed", "preset/test_passed.wav", "测试成功"),
                 SoundMapping("test.failed", "preset/test_failed.wav", "测试失败"),
-                SoundMapping("project.opened", "preset/project_opened.wav", "项目打开")
+                SoundMapping("project.opened", "preset/project_opened.wav", "项目打开"),
+                SoundMapping("debug.started", "preset/debug_started.wav", "调试开始"),
+                SoundMapping("debug.stopped", "preset/debug_stopped.wav", "调试停止"),
+                SoundMapping("file.created", "preset/file_created.wav", "文件创建"),
+                SoundMapping("file.deleted", "preset/file_deleted.wav", "文件删除"),
+                SoundMapping("file.saved", "preset/file_saved.wav", "文件保存"),
+                SoundMapping("file.renamed", "preset/file_renamed.wav", "文件重命名"),
+                SoundMapping("git.COMMIT.success", "preset/git_commit.wav", "Git提交成功"),
+                SoundMapping("git.PULL.success", "preset/git_pull.wav", "Git拉取成功"),
+                SoundMapping("git.PUSH.success", "preset/git_push.wav", "Git推送成功"),
+                // 带正则匹配的示例事件
+                SoundMapping("build.failed.error", "preset/build_failed_error.wav", "构建失败（含错误）", "error|Error|ERROR"),
+                SoundMapping("test.failed.assertion", "preset/test_failed_assert.wav", "测试失败（断言错误）", "AssertionError|assert")
             )
         )
     }

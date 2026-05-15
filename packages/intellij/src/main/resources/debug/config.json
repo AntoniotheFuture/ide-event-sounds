@@ -1,5 +1,5 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "enable": true,
   "sounds": [
     {
@@ -163,7 +163,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.commit.success",
+      "eventKey": "git.COMMIT.success",
       "soundPath": "sounds/git_commit_success.wav",
       "name": "Git 提交成功",
       "regex": "",
@@ -171,7 +171,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.commit.failed",
+      "eventKey": "git.COMMIT.failed",
       "soundPath": "sounds/git_commit_failed.wav",
       "name": "Git 提交失败",
       "regex": "",
@@ -179,7 +179,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.push.success",
+      "eventKey": "git.PUSH.success",
       "soundPath": "sounds/git_push_success.wav",
       "name": "Git 推送成功",
       "regex": "",
@@ -187,7 +187,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.push.failed",
+      "eventKey": "git.PUSH.failed",
       "soundPath": "sounds/git_push_failed.wav",
       "name": "Git 推送失败",
       "regex": "",
@@ -195,7 +195,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.pull.success",
+      "eventKey": "git.PULL.success",
       "soundPath": "sounds/git_pull_success.wav",
       "name": "Git 拉取成功",
       "regex": "",
@@ -203,7 +203,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.pull.failed",
+      "eventKey": "git.PULL.failed",
       "soundPath": "sounds/git_pull_failed.wav",
       "name": "Git 拉取失败",
       "regex": "",
@@ -219,7 +219,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.merge.success",
+      "eventKey": "git.MERGE.success",
       "soundPath": "sounds/git_merge_success.wav",
       "name": "Git 合并成功",
       "regex": "",
@@ -227,7 +227,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.merge.failed",
+      "eventKey": "git.MERGE.failed",
       "soundPath": "sounds/git_merge_failed.wav",
       "name": "Git 合并失败",
       "regex": "",
@@ -235,7 +235,7 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.rebase.success",
+      "eventKey": "git.REBASE.success",
       "soundPath": "sounds/git_rebase_success.wav",
       "name": "Git 变基成功",
       "regex": "",
@@ -243,11 +243,43 @@
       "isEnabled": true
     },
     {
-      "eventKey": "git.rebase.failed",
+      "eventKey": "git.REBASE.failed",
       "soundPath": "sounds/git_rebase_failed.wav",
       "name": "Git 变基失败",
       "regex": "",
       "isCustom": false,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "build.failed.error",
+      "soundPath": "sounds/build_failed_error.wav",
+      "name": "构建失败（含错误）",
+      "regex": "error|Error|ERROR",
+      "isCustom": true,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "test.failed.assertion",
+      "soundPath": "sounds/test_failed_assert.wav",
+      "name": "测试失败（断言错误）",
+      "regex": "AssertionError|assert.*failed",
+      "isCustom": true,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.saved.kt",
+      "soundPath": "sounds/file_saved_kt.wav",
+      "name": "Kotlin 文件保存",
+      "regex": "\\.kt$",
+      "isCustom": true,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "git.push.large",
+      "soundPath": "sounds/git_push_large.wav",
+      "name": "Git 推送大型文件",
+      "regex": "large file|too large|exceeds",
+      "isCustom": true,
       "isEnabled": true
     }
   ]

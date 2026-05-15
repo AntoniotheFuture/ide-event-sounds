@@ -1,6 +1,41 @@
 # 事件 Key 速查表
 
-> **说明**：✅ 表示已实现，🔄 表示开发中，❌ 表示尚未实现
+> **说明**：✅ 表示已实现，🔄 表示开发中，❌ 表示尚未实现  
+> **版本**：0.0.3（支持正则匹配）
+
+---
+
+## 新增功能：正则匹配（0.0.3版本）
+
+从 0.0.3 版本开始，支持为事件配置**消息内容正则表达式**，实现更细粒度的声音触发控制。
+
+### 匹配规则
+- **空正则**（默认）：不进行匹配，事件触发即播放声音
+- **正则匹配成功**：播放声音
+- **正则匹配失败**：不播放声音
+
+### 正则语法
+基于 Java 标准正则语法，支持常用模式：
+| 模式 | 说明 | 示例 |
+|------|------|------|
+| `.*` | 匹配任意字符 | `.*成功.*` |
+| `\d+` | 匹配数字 | `端口 \d+` |
+| `^` | 行首 | `^错误` |
+| `$` | 行尾 | `.kt$` |
+| `\|` | 或 | `error\|Error\|ERROR` |
+
+### 使用示例
+
+```json
+{
+  "eventKey": "build.failed.error",
+  "soundPath": "preset/build_error.wav",
+  "name": "构建失败（含错误）",
+  "regex": "error|Error|ERROR"
+}
+```
+
+---
 
 ## 核心高频事件
 
@@ -119,11 +154,11 @@
 
 ## 使用示例
 
-在 `~/.ide-event-sounds/config.json` 中添加自定义事件：
+### 基础配置
 
 ```json
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "enable": true,
   "sounds": [
     {
@@ -144,5 +179,58 @@
   ]
 }
 ```
+
+### 正则匹配示例
+
+```json
+{
+  "version": "0.0.3",
+  "enable": true,
+  "sounds": [
+    {
+      "eventKey": "build.failed.error",
+      "soundPath": "preset/build_error.wav",
+      "name": "构建失败（含错误）",
+      "regex": "error|Error|ERROR",
+      "isCustom": true,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "test.failed.assertion",
+      "soundPath": "preset/test_assert.wav",
+      "name": "测试断言失败",
+      "regex": "AssertionError|assert.*failed",
+      "isCustom": true,
+      "isEnabled": true
+    },
+    {
+      "eventKey": "file.saved.kt",
+      "soundPath": "preset/save_kt.wav",
+      "name": "Kotlin 文件保存",
+      "regex": "\\.kt$",
+      "isCustom": true,
+      "isEnabled": true
+    }
+  ]
+}
+```
+
+---
+
+## 配置文件字段说明
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `version` | String | 是 | 配置版本，当前为 "0.0.3" |
+| `enable` | Boolean | 是 | 全局开关，false 时禁用所有声音 |
+| `sounds` | Array | 是 | 事件-声音映射列表 |
+| `sounds[].eventKey` | String | 是 | 事件唯一标识 |
+| `sounds[].soundPath` | String | 是 | 声音文件路径 |
+| `sounds[].name` | String | 否 | 事件名称（展示用） |
+| `sounds[].regex` | String | 否 | 正则表达式，空串表示不匹配 |
+| `sounds[].isCustom` | Boolean | 否 | 是否自定义事件 |
+| `sounds[].isEnabled` | Boolean | 否 | 是否启用该事件 |
+
+---
 
 **注意**：Git 事件Key中的命令名必须大写，例如 `git.PULL.success` 而不是 `git.pull.success`。
