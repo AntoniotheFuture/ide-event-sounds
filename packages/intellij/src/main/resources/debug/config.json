@@ -281,6 +281,14 @@
       "regex": "large file|too large|exceeds",
       "isCustom": true,
       "isEnabled": true
+    },
+    {
+      "eventKey": "test.message",
+      "soundPath": "sounds/test_message.wav",
+      "name": "事件声音测试",
+      "regex": ".*事件声音测试通知.*",
+      "isCustom": true,
+      "isEnabled": true
     }
   ]
 }
