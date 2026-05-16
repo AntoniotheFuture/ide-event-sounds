@@ -63,7 +63,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.antoniofuture.ideeventsounds.intellij.plugin.EventSoundsPluginService"/>
-        <configurable instance="com.antoniofuture.ideeventsounds.intellij.settings.EventSoundsConfigurable"/>
+        <projectConfigurable instance="com.antoniofuture.ideeventsounds.intellij.settings.EventSoundsConfigurable"/>
     </extensions>
 
     <applicationListeners>

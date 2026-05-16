@@ -4,9 +4,9 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
-import com.intellij.ui.JBColor
 import javax.swing.JButton
 import javax.swing.JCheckBox
+import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -15,11 +15,16 @@ import javax.swing.JTable
 import javax.swing.JTextField
 import javax.swing.border.EmptyBorder
 import javax.swing.table.AbstractTableModel
+import javax.swing.table.TableCellRenderer
+import javax.swing.table.TableColumn
 import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridLayout
+import java.awt.Point
 import java.io.File
-import javax.swing.Icon
+import javax.swing.DefaultCellEditor
 
 import com.antoniofuture.ideeventsounds.core.config.ConfigManager
 import com.antoniofuture.ideeventsounds.core.config.SoundMapping
@@ -71,41 +76,67 @@ class EventSoundsConfigPanel(val project: Project) {
     }
 
     private fun setupUI() {
-        val topPanel = JPanel(GridLayout(0, 1))
-        topPanel.add(enableCheckbox)
-
-        val buttonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        val addButton = JButton("添加事件")
-        val editButton = JButton("编辑")
-        val removeButton = JButton("删除")
-        val testButton = JButton("测试播放")
-
+        val topPanel = JPanel(BorderLayout(5, 5))
+        
+        val addPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        val addButton = JButton("添加事件 (Add)")
         addButton.addActionListener { addMapping() }
-        editButton.addActionListener { editMapping() }
-        removeButton.addActionListener { removeMapping() }
-        testButton.addActionListener { testPlay() }
-
-        buttonPanel.add(addButton)
-        buttonPanel.add(editButton)
-        buttonPanel.add(removeButton)
-        buttonPanel.add(testButton)
+        addPanel.add(addButton)
+        
+        topPanel.add(enableCheckbox, BorderLayout.NORTH)
+        topPanel.add(addPanel, BorderLayout.SOUTH)
 
         eventTable.model = tableModel
-        eventTable.columnModel.getColumn(0).width = 50
-        eventTable.columnModel.getColumn(1).width = 150
-        eventTable.columnModel.getColumn(2).width = 100
-        eventTable.columnModel.getColumn(3).width = 150
-        eventTable.columnModel.getColumn(4).width = 200
+        eventTable.columnModel.getColumn(0).preferredWidth = 60
+        eventTable.columnModel.getColumn(1).preferredWidth = 150
+        eventTable.columnModel.getColumn(2).preferredWidth = 120
+        eventTable.columnModel.getColumn(3).preferredWidth = 200
+        eventTable.columnModel.getColumn(4).preferredWidth = 250
+        eventTable.columnModel.getColumn(5).preferredWidth = 150
+        
+        eventTable.columnModel.getColumn(0).minWidth = 50
+        eventTable.columnModel.getColumn(1).minWidth = 100
+        eventTable.columnModel.getColumn(2).minWidth = 80
+        eventTable.columnModel.getColumn(3).minWidth = 100
+        eventTable.columnModel.getColumn(4).minWidth = 100
+        eventTable.columnModel.getColumn(5).minWidth = 150
+        
+        eventTable.rowHeight = 30
+        eventTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION)
+        eventTable.setDefaultRenderer(JPanel::class.java, ActionButtonRenderer())
+        eventTable.autoResizeMode = javax.swing.JTable.AUTO_RESIZE_OFF
+        
+        eventTable.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                val point = e.point
+                val row = eventTable.rowAtPoint(point)
+                val col = eventTable.columnAtPoint(point)
+                
+                if (row >= 0 && col == 5) {
+                    val rect = eventTable.getCellRect(row, col, false)
+                    val relativeX = e.x - rect.x
+                    
+                    if (relativeX < 50) {
+                        editMapping(row)
+                    } else if (relativeX < 100) {
+                        testPlay(tableModel.getMapping(row).soundPath)
+                    } else {
+                        removeMapping(row)
+                    }
+                }
+            }
+        })
 
         val tableScrollPane = JScrollPane(eventTable)
+        tableScrollPane.preferredSize = java.awt.Dimension(950, 400)
+        tableScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val infoLabel = JLabel("<html>提示：修改配置后可能需要重启 IDE 才能完全生效</html>")
+        val infoLabel = JLabel("<html>提示：修改配置后需要点击【确定】或【应用】按钮保存，重启IDE可使所有更改完全生效</html>")
         infoLabel.border = EmptyBorder(5, 5, 5, 5)
 
         mainPanel.add(topPanel, BorderLayout.NORTH)
         mainPanel.add(tableScrollPane, BorderLayout.CENTER)
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH)
-        mainPanel.add(infoLabel, BorderLayout.PAGE_END)
+        mainPanel.add(infoLabel, BorderLayout.SOUTH)
     }
 
     fun loadSettings() {
@@ -128,213 +159,260 @@ class EventSoundsConfigPanel(val project: Project) {
             configManager.saveConfig(config)
             originalEnable = config.enable
             originalMappings = config.sounds.toList()
-            Messages.showMessageDialog(project, "配置已保存", "成功", Messages.getInformationIcon())
         } catch (e: Exception) {
             Messages.showMessageDialog(project, "保存配置失败: ${e.message}", "错误", Messages.getErrorIcon())
         }
     }
 
     fun isModified(): Boolean {
-        if (enableCheckbox.isSelected != originalEnable) return true
-        return tableModel.getMappings() != originalMappings
+        return enableCheckbox.isSelected != originalEnable || 
+               tableModel.getMappings() != originalMappings
     }
 
     private fun addMapping() {
-        val dialog = MappingDialog(project, null)
-        if (dialog.showAndGet()) {
+        val dialog = EventMappingDialog(project, null)
+        dialog.show()
+        if (dialog.okClicked) {
             tableModel.addMapping(dialog.getMapping())
         }
     }
 
-    private fun editMapping() {
-        val row = eventTable.selectedRow
-        if (row >= 0) {
-            val mapping = tableModel.getMapping(row)
-            val dialog = MappingDialog(project, mapping)
-            if (dialog.showAndGet()) {
-                tableModel.updateMapping(row, dialog.getMapping())
-            }
-        } else {
-            Messages.showInfoMessage(project, "请先选择要编辑的事件", "提示")
+    private fun editMapping(row: Int) {
+        val mapping = tableModel.getMapping(row)
+        val dialog = EventMappingDialog(project, mapping)
+        dialog.show()
+        if (dialog.okClicked) {
+            tableModel.updateMapping(row, dialog.getMapping())
         }
     }
 
-    private fun removeMapping() {
-        val row = eventTable.selectedRow
-        if (row >= 0) {
-            val result = Messages.showYesNoDialog(
-                project,
-                "确定要删除选中的事件吗？",
-                "确认删除",
-                Messages.getQuestionIcon()
-            )
-            if (result == 0) {
-                tableModel.removeMapping(row)
-            }
-        } else {
-            Messages.showInfoMessage(project, "请先选择要删除的事件", "提示")
+    private fun removeMapping(row: Int) {
+        val result = Messages.showYesNoDialog(
+            project,
+            "确定要删除这个事件配置吗？",
+            "确认删除",
+            Messages.getQuestionIcon()
+        )
+        if (result == Messages.YES) {
+            tableModel.removeMapping(row)
         }
     }
 
-    private fun testPlay() {
-        val row = eventTable.selectedRow
-        if (row >= 0) {
-            val mapping = tableModel.getMapping(row)
-            try {
-                val resourceDir = System.getProperty("project.resources")
-                val soundFile = if (resourceDir != null) {
-                    File(resourceDir, mapping.soundPath)
+    private fun testPlay(soundPath: String) {
+        try {
+            if (soundPath.startsWith("sounds/")) {
+                val fileName = soundPath.substring("sounds/".length)
+                val resourcePath = "/preset/$fileName"
+                val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
+                if (inputStream != null) {
+                    soundPlayer.playFromStream(inputStream)
                 } else {
-                    File(mapping.soundPath)
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
                 }
-
+            } else {
+                val soundFile = File(soundPath)
                 if (soundFile.exists()) {
                     soundPlayer.playFromFile(soundFile)
-                    Messages.showInfoMessage(project, "正在播放: ${mapping.name}", "测试播放")
                 } else {
-                    Messages.showMessageDialog(project, "找不到声音文件: ${mapping.soundPath}", "错误", Messages.getWarningIcon())
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
                 }
-            } catch (e: Exception) {
-                Messages.showMessageDialog(project, "播放失败: ${e.message}", "错误", Messages.getErrorIcon())
             }
-        } else {
-            Messages.showInfoMessage(project, "请先选择要测试的事件", "提示")
+        } catch (e: Exception) {
+            Messages.showMessageDialog(project, "播放失败: ${e.message}", "错误", Messages.getErrorIcon())
         }
     }
 }
 
 class SoundMappingTableModel : AbstractTableModel() {
-    private val columns = arrayOf("启用", "事件Key", "名称", "正则表达式", "声音文件")
+    private val columns = arrayOf("启用", "事件Key", "名称", "声音路径", "正则", "操作")
     private val mappings = mutableListOf<SoundMapping>()
 
-    fun setMappings(list: List<SoundMapping>) {
+    fun setMappings(newMappings: List<SoundMapping>) {
         mappings.clear()
-        mappings.addAll(list)
+        mappings.addAll(newMappings)
         fireTableDataChanged()
     }
 
-    fun getMapping(row: Int) = mappings[row]
+    fun getMappings(): List<SoundMapping> = mappings.toList()
+
+    fun getMapping(index: Int): SoundMapping = mappings[index]
 
     fun addMapping(mapping: SoundMapping) {
         mappings.add(mapping)
         fireTableRowsInserted(mappings.size - 1, mappings.size - 1)
     }
 
-    fun updateMapping(row: Int, mapping: SoundMapping) {
-        mappings[row] = mapping
-        fireTableRowsUpdated(row, row)
+    fun updateMapping(index: Int, mapping: SoundMapping) {
+        mappings[index] = mapping
+        fireTableRowsUpdated(index, index)
     }
 
-    fun removeMapping(row: Int) {
-        mappings.removeAt(row)
-        fireTableRowsDeleted(row, row)
+    fun removeMapping(index: Int) {
+        mappings.removeAt(index)
+        fireTableRowsDeleted(index, index)
     }
 
-    fun getMappings() = mappings.toList()
+    override fun getColumnCount(): Int = columns.size
 
-    override fun getColumnCount() = columns.size
-    override fun getRowCount() = mappings.size
-    override fun getColumnName(col: Int) = columns[col]
+    override fun getColumnName(col: Int): String = columns[col]
+
+    override fun getRowCount(): Int = mappings.size
 
     override fun getValueAt(row: Int, col: Int): Any {
-        val m = mappings[row]
+        val mapping = mappings[row]
         return when (col) {
-            0 -> m.isEnabled
-            1 -> m.eventKey
-            2 -> m.name
-            3 -> m.regex
-            4 -> m.soundPath
+            0 -> mapping.isEnabled
+            1 -> mapping.eventKey
+            2 -> mapping.name
+            3 -> mapping.soundPath
+            4 -> mapping.regex
+            5 -> mapping
             else -> ""
         }
     }
 
-    override fun setValueAt(value: Any, row: Int, col: Int) {
-        val m = mappings[row]
-        mappings[row] = when (col) {
-            0 -> m.copy(isEnabled = value as Boolean)
-            1 -> m.copy(eventKey = value as String)
-            2 -> m.copy(name = value as String)
-            3 -> m.copy(regex = value as String)
-            4 -> m.copy(soundPath = value as String)
-            else -> m
-        }
-        fireTableRowsUpdated(row, row)
-    }
-
-    override fun isCellEditable(row: Int, col: Int) = col == 0
-
     override fun getColumnClass(col: Int): Class<*> {
         return when (col) {
             0 -> java.lang.Boolean::class.java
-            else -> String::class.java
+            5 -> JPanel::class.java
+            else -> java.lang.String::class.java
+        }
+    }
+
+    override fun isCellEditable(row: Int, col: Int): Boolean = col == 0 || col == 5
+
+    override fun setValueAt(value: Any, row: Int, col: Int) {
+        if (col == 0) {
+            mappings[row] = mappings[row].copy(isEnabled = value as Boolean)
         }
     }
 }
 
-class MappingDialog(private val project: Project, private val initialMapping: SoundMapping?) :
-    DialogWrapper(project) {
+class ActionButtonRenderer : TableCellRenderer {
+    private val panel: JPanel
+    private val editButton = JButton("编辑")
+    private val playButton = JButton("播放")
+    private val deleteButton = JButton("删除")
 
-    private var eventKeyField = JTextField(20)
-    private var nameField = JTextField(20)
-    private var regexField = JTextField(20)
-    private var soundPathField = JTextField(20)
+    init {
+        panel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0))
+        panel.isOpaque = false
+        
+        editButton.preferredSize = Dimension(45, 22)
+        playButton.preferredSize = Dimension(45, 22)
+        deleteButton.preferredSize = Dimension(45, 22)
+        
+        editButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
+        playButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
+        deleteButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
+        
+        panel.add(editButton)
+        panel.add(playButton)
+        panel.add(deleteButton)
+    }
+
+    override fun getTableCellRendererComponent(
+        table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, col: Int
+    ): Component {
+        return panel
+    }
+}
+
+class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : DialogWrapper(true) {
+    private val eventKeys = listOf(
+        "build.success", "build.failed", "compile.finished", "compile.started",
+        "test.passed", "test.failed", "test.started", "test.stopped",
+        "run.start", "run.stop", "debug.started", "debug.stopped",
+        "project.opened", "project.closed", "application.starting", "application.loaded",
+        "file.created", "file.deleted", "file.moved", "file.renamed", "file.saved",
+        "git.commit.success", "git.commit.failed", "git.push.success", "git.push.failed",
+        "git.pull.success", "git.pull.failed", "indexing.started", "indexing.finished"
+    )
+    
+    private var eventKeyCombo = JComboBox(eventKeys.toTypedArray())
+    private var soundPathField = JTextField()
+    private var nameField = JTextField()
+    private var regexField = JTextField()
     private var enabledCheckbox = JCheckBox("启用")
-    private var browseButton = JButton("浏览...")
+    private val soundPlayer = SoundPlayer()
 
-    private var resultMapping: SoundMapping? = null
+    var okClicked = false
 
     init {
         title = if (initialMapping == null) "添加事件" else "编辑事件"
+        eventKeyCombo.isEditable = true
 
         initialMapping?.let {
-            eventKeyField.text = it.eventKey
+            eventKeyCombo.editor.item = it.eventKey
+            soundPathField.text = it.soundPath
             nameField.text = it.name
             regexField.text = it.regex
-            soundPathField.text = it.soundPath
             enabledCheckbox.isSelected = it.isEnabled
-        } ?: run {
-            enabledCheckbox.isSelected = true
-        }
-
-        browseButton.addActionListener {
-            val descriptor = com.intellij.openapi.fileChooser.FileChooserDescriptor(
-                true, false, false, false, false, false
-            )
-            val file = com.intellij.openapi.fileChooser.FileChooser.chooseFile(descriptor, project, null)
-            file?.let { soundPathField.text = it.path }
         }
 
         init()
     }
 
     override fun createCenterPanel(): JComponent {
-        val panel = JPanel(GridLayout(0, 2, 5, 5))
-        panel.border = EmptyBorder(10, 10, 10, 10)
-
+        val panel = JPanel(GridLayout(5, 2, 10, 10))
+        
         panel.add(JLabel("事件Key:"))
-        panel.add(eventKeyField)
-
+        panel.add(eventKeyCombo)
+        
+        panel.add(JLabel("声音路径:"))
+        val soundPathPanel = JPanel(BorderLayout(5, 0))
+        soundPathPanel.add(soundPathField, BorderLayout.CENTER)
+        val testButton = JButton("测试")
+        testButton.addActionListener {
+            testPlay(soundPathField.text)
+        }
+        soundPathPanel.add(testButton, BorderLayout.EAST)
+        panel.add(soundPathPanel)
+        
         panel.add(JLabel("名称:"))
         panel.add(nameField)
-
+        
         panel.add(JLabel("正则表达式:"))
         panel.add(regexField)
-
-        panel.add(JLabel("声音文件:"))
-        val soundPanel = JPanel(BorderLayout())
-        soundPanel.add(soundPathField, BorderLayout.CENTER)
-        soundPanel.add(browseButton, BorderLayout.EAST)
-        panel.add(soundPanel)
-
+        
         panel.add(JLabel(""))
         panel.add(enabledCheckbox)
 
         return panel
     }
 
+    private fun testPlay(soundPath: String) {
+        try {
+            if (soundPath.startsWith("sounds/")) {
+                val fileName = soundPath.substring("sounds/".length)
+                val resourcePath = "/preset/$fileName"
+                val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
+                if (inputStream != null) {
+                    soundPlayer.playFromStream(inputStream)
+                } else {
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
+                }
+            } else {
+                val soundFile = File(soundPath)
+                if (soundFile.exists()) {
+                    soundPlayer.playFromFile(soundFile)
+                } else {
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
+                }
+            }
+        } catch (e: Exception) {
+            Messages.showMessageDialog(project, "播放失败: ${e.message}", "错误", Messages.getErrorIcon())
+        }
+    }
+
     fun getMapping(): SoundMapping {
+        val eventKey = if (eventKeyCombo.isEditable) {
+            eventKeyCombo.editor.item?.toString() ?: ""
+        } else {
+            eventKeyCombo.selectedItem as String
+        }
         return SoundMapping(
-            eventKey = eventKeyField.text.trim(),
+            eventKey = eventKey.trim(),
             soundPath = soundPathField.text.trim(),
             name = nameField.text.trim(),
             regex = regexField.text.trim(),
@@ -343,20 +421,7 @@ class MappingDialog(private val project: Project, private val initialMapping: So
     }
 
     override fun doOKAction() {
-        if (eventKeyField.text.isBlank()) {
-            Messages.showMessageDialog(project, "事件Key不能为空", "验证错误", Messages.getWarningIcon())
-            return
-        }
-        if (soundPathField.text.isBlank()) {
-            Messages.showMessageDialog(project, "声音文件不能为空", "验证错误", Messages.getWarningIcon())
-            return
-        }
-        resultMapping = getMapping()
+        okClicked = true
         super.doOKAction()
-    }
-
-    override fun showAndGet(): Boolean {
-        show()
-        return resultMapping != null
     }
 }

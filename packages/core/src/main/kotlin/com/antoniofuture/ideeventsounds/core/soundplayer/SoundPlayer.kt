@@ -47,6 +47,10 @@ class SoundPlayer {
             if (soundPath.startsWith("preset/")) {
                 println("[SoundPlayer] Playing preset sound")
                 playPresetSound(soundPath.substring("preset/".length))
+            } else if (soundPath.startsWith("sounds/")) {
+                val fileName = soundPath.substring("sounds/".length)
+                println("[SoundPlayer] Playing sound from preset: $fileName")
+                playPresetSound(fileName)
             } else {
                 val resourceDir = getResourcesDir()
                 val soundFile = if (resourceDir != null) {
