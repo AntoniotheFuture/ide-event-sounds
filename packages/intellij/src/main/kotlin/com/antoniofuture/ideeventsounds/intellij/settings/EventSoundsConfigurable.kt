@@ -75,36 +75,65 @@ class EventSoundsConfigPanel(val project: Project) {
         loadSettings()
     }
 
+    private lateinit var editButton: JButton
+    private lateinit var deleteButton: JButton
+    
     private fun setupUI() {
         val topPanel = JPanel(BorderLayout(5, 5))
         
-        val addPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        val actionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 0))
         val addButton = JButton("添加事件 (Add)")
         addButton.addActionListener { addMapping() }
-        addPanel.add(addButton)
+        
+        editButton = JButton("编辑 (Edit)")
+        editButton.addActionListener { 
+            val selectedRow = eventTable.selectedRow
+            if (selectedRow >= 0) {
+                editMapping(selectedRow)
+            }
+        }
+        editButton.isEnabled = false
+        
+        deleteButton = JButton("删除 (Delete)")
+        deleteButton.addActionListener { 
+            val selectedRow = eventTable.selectedRow
+            if (selectedRow >= 0) {
+                removeMapping(selectedRow)
+            }
+        }
+        deleteButton.isEnabled = false
+        
+        actionPanel.add(addButton)
+        actionPanel.add(editButton)
+        actionPanel.add(deleteButton)
         
         topPanel.add(enableCheckbox, BorderLayout.NORTH)
-        topPanel.add(addPanel, BorderLayout.SOUTH)
+        topPanel.add(actionPanel, BorderLayout.SOUTH)
 
         eventTable.model = tableModel
         eventTable.columnModel.getColumn(0).preferredWidth = 60
         eventTable.columnModel.getColumn(1).preferredWidth = 150
         eventTable.columnModel.getColumn(2).preferredWidth = 120
         eventTable.columnModel.getColumn(3).preferredWidth = 200
-        eventTable.columnModel.getColumn(4).preferredWidth = 250
-        eventTable.columnModel.getColumn(5).preferredWidth = 150
+        eventTable.columnModel.getColumn(4).preferredWidth = 150
+        eventTable.columnModel.getColumn(5).preferredWidth = 60
         
         eventTable.columnModel.getColumn(0).minWidth = 50
         eventTable.columnModel.getColumn(1).minWidth = 100
         eventTable.columnModel.getColumn(2).minWidth = 80
         eventTable.columnModel.getColumn(3).minWidth = 100
-        eventTable.columnModel.getColumn(4).minWidth = 100
-        eventTable.columnModel.getColumn(5).minWidth = 150
+        eventTable.columnModel.getColumn(4).minWidth = 80
+        eventTable.columnModel.getColumn(5).minWidth = 50
         
         eventTable.rowHeight = 30
         eventTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION)
-        eventTable.setDefaultRenderer(JPanel::class.java, ActionButtonRenderer())
-        eventTable.autoResizeMode = javax.swing.JTable.AUTO_RESIZE_OFF
+        eventTable.autoResizeMode = javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
+        
+        eventTable.selectionModel.addListSelectionListener {
+            val selectedRow = eventTable.selectedRow
+            editButton.isEnabled = selectedRow >= 0
+            deleteButton.isEnabled = selectedRow >= 0
+        }
         
         eventTable.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
@@ -113,25 +142,15 @@ class EventSoundsConfigPanel(val project: Project) {
                 val col = eventTable.columnAtPoint(point)
                 
                 if (row >= 0 && col == 5) {
-                    val rect = eventTable.getCellRect(row, col, false)
-                    val relativeX = e.x - rect.x
-                    
-                    if (relativeX < 50) {
-                        editMapping(row)
-                    } else if (relativeX < 100) {
-                        testPlay(tableModel.getMapping(row).soundPath)
-                    } else {
-                        removeMapping(row)
-                    }
+                    testPlay(tableModel.getMapping(row).soundPath)
                 }
             }
         })
 
         val tableScrollPane = JScrollPane(eventTable)
-        tableScrollPane.preferredSize = java.awt.Dimension(950, 400)
         tableScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
 
-        val infoLabel = JLabel("<html>提示：修改配置后需要点击【确定】或【应用】按钮保存，重启IDE可使所有更改完全生效</html>")
+        val infoLabel = JLabel("<html>提示：修改配置后需要点击【确定】或【应用】按钮保存，配置会立即生效</html>")
         infoLabel.border = EmptyBorder(5, 5, 5, 5)
 
         mainPanel.add(topPanel, BorderLayout.NORTH)
@@ -266,55 +285,24 @@ class SoundMappingTableModel : AbstractTableModel() {
             2 -> mapping.name
             3 -> mapping.soundPath
             4 -> mapping.regex
-            5 -> mapping
+            5 -> "🔊"
             else -> ""
         }
     }
-
+    
     override fun getColumnClass(col: Int): Class<*> {
         return when (col) {
             0 -> java.lang.Boolean::class.java
-            5 -> JPanel::class.java
             else -> java.lang.String::class.java
         }
     }
-
-    override fun isCellEditable(row: Int, col: Int): Boolean = col == 0 || col == 5
+    
+    override fun isCellEditable(row: Int, col: Int): Boolean = col == 0
 
     override fun setValueAt(value: Any, row: Int, col: Int) {
         if (col == 0) {
             mappings[row] = mappings[row].copy(isEnabled = value as Boolean)
         }
-    }
-}
-
-class ActionButtonRenderer : TableCellRenderer {
-    private val panel: JPanel
-    private val editButton = JButton("编辑")
-    private val playButton = JButton("播放")
-    private val deleteButton = JButton("删除")
-
-    init {
-        panel = JPanel(FlowLayout(FlowLayout.LEFT, 2, 0))
-        panel.isOpaque = false
-        
-        editButton.preferredSize = Dimension(45, 22)
-        playButton.preferredSize = Dimension(45, 22)
-        deleteButton.preferredSize = Dimension(45, 22)
-        
-        editButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
-        playButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
-        deleteButton.font = java.awt.Font("SansSerif", java.awt.Font.PLAIN, 11)
-        
-        panel.add(editButton)
-        panel.add(playButton)
-        panel.add(deleteButton)
-    }
-
-    override fun getTableCellRendererComponent(
-        table: JTable, value: Any, isSelected: Boolean, hasFocus: Boolean, row: Int, col: Int
-    ): Component {
-        return panel
     }
 }
 
