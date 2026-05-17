@@ -1,28 +1,25 @@
 package com.antoniofuture.ideeventsounds.intellij.settings
 
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.util.IconLoader
+import com.intellij.ui.ToolbarDecorator
 import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.JTable
-import javax.swing.JTextField
 import javax.swing.border.EmptyBorder
 import javax.swing.table.AbstractTableModel
-import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumn
 import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.GridLayout
-import java.awt.Point
 import java.io.File
 import javax.swing.DefaultCellEditor
 
@@ -75,65 +72,23 @@ class EventSoundsConfigPanel(val project: Project) {
         loadSettings()
     }
 
-    private lateinit var editButton: JButton
-    private lateinit var deleteButton: JButton
-    
     private fun setupUI() {
-        val topPanel = JPanel(BorderLayout(5, 5))
-        
-        val actionPanel = JPanel(FlowLayout(FlowLayout.LEFT, 5, 0))
-        val addButton = JButton("添加事件 (Add)")
-        addButton.addActionListener { addMapping() }
-        
-        editButton = JButton("编辑 (Edit)")
-        editButton.addActionListener { 
-            val selectedRow = eventTable.selectedRow
-            if (selectedRow >= 0) {
-                editMapping(selectedRow)
-            }
-        }
-        editButton.isEnabled = false
-        
-        deleteButton = JButton("删除 (Delete)")
-        deleteButton.addActionListener { 
-            val selectedRow = eventTable.selectedRow
-            if (selectedRow >= 0) {
-                removeMapping(selectedRow)
-            }
-        }
-        deleteButton.isEnabled = false
-        
-        actionPanel.add(addButton)
-        actionPanel.add(editButton)
-        actionPanel.add(deleteButton)
-        
-        topPanel.add(enableCheckbox, BorderLayout.NORTH)
-        topPanel.add(actionPanel, BorderLayout.SOUTH)
-
         eventTable.model = tableModel
         eventTable.columnModel.getColumn(0).preferredWidth = 60
         eventTable.columnModel.getColumn(1).preferredWidth = 150
         eventTable.columnModel.getColumn(2).preferredWidth = 120
-        eventTable.columnModel.getColumn(3).preferredWidth = 200
+        eventTable.columnModel.getColumn(3).preferredWidth = 250
         eventTable.columnModel.getColumn(4).preferredWidth = 150
-        eventTable.columnModel.getColumn(5).preferredWidth = 60
         
         eventTable.columnModel.getColumn(0).minWidth = 50
         eventTable.columnModel.getColumn(1).minWidth = 100
         eventTable.columnModel.getColumn(2).minWidth = 80
-        eventTable.columnModel.getColumn(3).minWidth = 100
+        eventTable.columnModel.getColumn(3).minWidth = 120
         eventTable.columnModel.getColumn(4).minWidth = 80
-        eventTable.columnModel.getColumn(5).minWidth = 50
         
         eventTable.rowHeight = 30
         eventTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION)
         eventTable.autoResizeMode = javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS
-        
-        eventTable.selectionModel.addListSelectionListener {
-            val selectedRow = eventTable.selectedRow
-            editButton.isEnabled = selectedRow >= 0
-            deleteButton.isEnabled = selectedRow >= 0
-        }
         
         eventTable.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
@@ -141,20 +96,33 @@ class EventSoundsConfigPanel(val project: Project) {
                 val row = eventTable.rowAtPoint(point)
                 val col = eventTable.columnAtPoint(point)
                 
-                if (row >= 0 && col == 5) {
+                if (row >= 0 && col == 3) {
                     testPlay(tableModel.getMapping(row).soundPath)
                 }
             }
         })
 
-        val tableScrollPane = JScrollPane(eventTable)
-        tableScrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        val tableWithToolbar = ToolbarDecorator.createDecorator(eventTable)
+            .setAddAction { addMapping() }
+            .setEditAction { 
+                val selectedRow = eventTable.selectedRow
+                if (selectedRow >= 0) {
+                    editMapping(selectedRow)
+                }
+            }
+            .setRemoveAction { 
+                val selectedRow = eventTable.selectedRow
+                if (selectedRow >= 0) {
+                    removeMapping(selectedRow)
+                }
+            }
+            .createPanel()
 
         val infoLabel = JLabel("<html>提示：修改配置后需要点击【确定】或【应用】按钮保存，配置会立即生效</html>")
         infoLabel.border = EmptyBorder(5, 5, 5, 5)
 
-        mainPanel.add(topPanel, BorderLayout.NORTH)
-        mainPanel.add(tableScrollPane, BorderLayout.CENTER)
+        mainPanel.add(enableCheckbox, BorderLayout.NORTH)
+        mainPanel.add(tableWithToolbar, BorderLayout.CENTER)
         mainPanel.add(infoLabel, BorderLayout.SOUTH)
     }
 
@@ -243,7 +211,7 @@ class EventSoundsConfigPanel(val project: Project) {
 }
 
 class SoundMappingTableModel : AbstractTableModel() {
-    private val columns = arrayOf("启用", "事件Key", "名称", "声音路径", "正则", "操作")
+    private val columns = arrayOf("启用", "事件Key", "名称", "声音路径", "正则")
     private val mappings = mutableListOf<SoundMapping>()
 
     fun setMappings(newMappings: List<SoundMapping>) {
@@ -283,9 +251,8 @@ class SoundMappingTableModel : AbstractTableModel() {
             0 -> mapping.isEnabled
             1 -> mapping.eventKey
             2 -> mapping.name
-            3 -> mapping.soundPath
+            3 -> "🔊 " + mapping.soundPath
             4 -> mapping.regex
-            5 -> "🔊"
             else -> ""
         }
     }
@@ -318,9 +285,9 @@ class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : 
     )
     
     private var eventKeyCombo = JComboBox(eventKeys.toTypedArray())
-    private var soundPathField = JTextField()
-    private var nameField = JTextField()
-    private var regexField = JTextField()
+    private var soundPathField = TextFieldWithBrowseButton()
+    private var nameField = javax.swing.JTextField()
+    private var regexField = javax.swing.JTextField()
     private var enabledCheckbox = JCheckBox("启用")
     private val soundPlayer = SoundPlayer()
 
@@ -329,6 +296,13 @@ class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : 
     init {
         title = if (initialMapping == null) "添加事件" else "编辑事件"
         eventKeyCombo.isEditable = true
+        
+        soundPathField.addBrowseFolderListener(
+            "选择声音文件",
+            "请选择一个声音文件",
+            project,
+            FileChooserDescriptorFactory.createSingleFileDescriptor()
+        )
 
         initialMapping?.let {
             eventKeyCombo.editor.item = it.eventKey
@@ -350,7 +324,7 @@ class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : 
         panel.add(JLabel("声音路径:"))
         val soundPathPanel = JPanel(BorderLayout(5, 0))
         soundPathPanel.add(soundPathField, BorderLayout.CENTER)
-        val testButton = JButton("测试")
+        val testButton = JButton("🔊")
         testButton.addActionListener {
             testPlay(soundPathField.text)
         }

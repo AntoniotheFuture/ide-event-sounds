@@ -142,7 +142,7 @@ tasks {
     buildPlugin {
         doLast {
             val libsDir = file("build/libs")
-            val intellijJar = libsDir.listFiles { _, name -> name.startsWith("intellij-") && name.endsWith(".jar") && !name.startsWith("instrumented-") }?.first()
+            val intellijJar = libsDir.listFiles { _, name -> name.startsWith("ide-event-sounds-") && name.endsWith(".jar") }?.first()
             val coreJar = rootProject.file("packages/core/build/libs/core.jar")
 
             if (intellijJar != null && coreJar.exists()) {
@@ -161,9 +161,6 @@ tasks {
                         rm -rf temp_plugin
                     """.trimIndent())
                 }
-
-                // 删除旧文件
-                intellijJar.delete()
 
                 println("Created plugin file: $newFileName with core module included")
             }
