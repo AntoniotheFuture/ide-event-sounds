@@ -1,6 +1,7 @@
 package com.antoniofuture.ideeventsounds.core.eventmatcher
 
 import com.antoniofuture.ideeventsounds.core.config.ConfigManager
+import com.antoniofuture.ideeventsounds.core.config.SoundMapping
 import com.antoniofuture.ideeventsounds.core.soundplayer.SoundPlayer
 import java.util.concurrent.ConcurrentHashMap
 
@@ -10,13 +11,17 @@ class EventMatcher {
     private val regexCache = ConcurrentHashMap<String, Regex>()
 
     fun matchAndPlay(eventKey: String, message: String? = null) {
-        val soundMapping = configManager.getSoundMapping(eventKey) ?: return
-
-        // 检查全局开关
         val config = configManager.loadConfig()
         if (!config.enable) {
             return
         }
+
+        if (eventKey == "notification" && message != null) {
+            matchAndPlayNotification(message)
+            return
+        }
+
+        val soundMapping = configManager.getSoundMapping(eventKey) ?: return
 
         // 检查单个事件是否启用
         if (!soundMapping.isEnabled) {
@@ -31,6 +36,40 @@ class EventMatcher {
         }
 
         soundPlayer.playSound(eventKey)
+    }
+
+    private fun matchAndPlayNotification(message: String) {
+        val config = configManager.loadConfig()
+        val notificationMappings = config.sounds.filter { it.eventKey == "notification" && it.isEnabled }
+
+        for (soundMapping in notificationMappings) {
+            if (soundMapping.regex.isNotEmpty() && matchesRegex(soundMapping.regex, message)) {
+                playSoundFromMapping(soundMapping)
+                return
+            }
+        }
+    }
+
+    private fun playSoundFromMapping(soundMapping: SoundMapping) {
+        val soundPath = soundMapping.soundPath
+        try {
+            if (soundPath.startsWith("preset/") || soundPath.startsWith("sounds/")) {
+                val prefix = if (soundPath.startsWith("preset/")) "preset/" else "sounds/"
+                val fileName = soundPath.substring(prefix.length)
+                val resourcePath = "/preset/$fileName"
+                val inputStream = javaClass.getResourceAsStream(resourcePath)
+                if (inputStream != null) {
+                    soundPlayer.playFromStream(inputStream)
+                }
+            } else {
+                val soundFile = java.io.File(soundPath)
+                if (soundFile.exists()) {
+                    soundPlayer.playFromFile(soundFile)
+                }
+            }
+        } catch (e: Exception) {
+            println("[EventMatcher] Error playing sound: ${e.message}")
+        }
     }
 
     private fun matchesRegex(pattern: String, message: String): Boolean {

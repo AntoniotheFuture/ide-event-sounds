@@ -21,7 +21,7 @@ class ProjectFileListener(private val project: Project) : VirtualFileListener {
     )
 
     init {
-        logger.error("DEBUG: ProjectFileListener initialized for project: ${project.name}")
+        logger.debug("ProjectFileListener initialized for project: ${project.name}")
     }
 
     override fun fileCreated(event: VirtualFileEvent) {
@@ -55,7 +55,7 @@ class ProjectFileListener(private val project: Project) : VirtualFileListener {
         }
 
         try {
-            logger.error("DEBUG: File event detected: $eventType - ${file.name}")
+            logger.debug("File event detected: $eventType - ${file.name}")
             val service = project.service<EventSoundsPluginService>()
             service.triggerEvent(eventType, "File $eventType: ${file.name}")
         } catch (e: Exception) {
@@ -78,7 +78,7 @@ class ProjectFileListener(private val project: Project) : VirtualFileListener {
         try {
             val oldName = event.oldValue?.toString() ?: ""
             val newName = event.newValue?.toString() ?: file.name
-            logger.error("DEBUG: File event detected: $eventType - $oldName -> $newName")
+            logger.debug("File event detected: $eventType - $oldName -> $newName")
             val service = project.service<EventSoundsPluginService>()
             service.triggerEvent(eventType, "File renamed: $oldName -> $newName")
         } catch (e: Exception) {

@@ -8,6 +8,9 @@
     <!-- 作者信息从统一配置读取 -->
     <vendor email="antonioliang@Foxmail.com" url="https://github.com/antoniofuture/ide-event-sounds">Antonio Future</vendor>
 
+    <!-- 插件仓库链接 -->
+    <url>https://github.com/antoniofuture/ide-event-sounds</url>
+
     <!-- 描述由 build.gradle.kts 动态注入 -->
     <description><![CDATA[
     <h2>IDE Event Sounds</h2>
@@ -18,6 +21,7 @@
         <li>编译完成提示音</li>
         <li>测试通过/失败提示音</li>
     </ul>
+    <p><a href="https://github.com/antoniofuture/ide-event-sounds">GitHub 仓库</a></p>
     ]]></description>
 
     <!-- 变更日志由 build.gradle.kts 动态注入 -->
@@ -74,4 +78,13 @@
     <projectListeners>
         <listener class="com.antoniofuture.ideeventsounds.intellij.listeners.BuildEventsListener" topic="com.intellij.task.ProjectTaskListener"/>
     </projectListeners>
+
+    <actions>
+        <action id="com.antoniofuture.ideeventsounds.intellij.actions.TestNotificationAction"
+                class="com.antoniofuture.ideeventsounds.intellij.actions.TestNotificationAction"
+                text="发送测试通知"
+                description="发送测试通知消息以触发事件声音">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

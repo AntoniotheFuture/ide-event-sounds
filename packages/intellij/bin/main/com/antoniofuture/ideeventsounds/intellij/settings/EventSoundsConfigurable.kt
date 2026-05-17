@@ -26,6 +26,9 @@ import javax.swing.DefaultCellEditor
 import com.antoniofuture.ideeventsounds.core.config.ConfigManager
 import com.antoniofuture.ideeventsounds.core.config.SoundMapping
 import com.antoniofuture.ideeventsounds.core.soundplayer.SoundPlayer
+import com.antoniofuture.ideeventsounds.intellij.plugin.EventSoundsPluginService
+import com.intellij.openapi.components.service
+import java.awt.Desktop
 
 class EventSoundsConfigurable(private val project: Project) : Configurable {
     private var configPanel: EventSoundsConfigPanel? = null
@@ -121,9 +124,34 @@ class EventSoundsConfigPanel(val project: Project) {
         val infoLabel = JLabel("<html>提示：修改配置后需要点击【确定】或【应用】按钮保存，配置会立即生效</html>")
         infoLabel.border = EmptyBorder(5, 5, 5, 5)
 
+        val testNotificationBtn = JButton("发送测试通知")
+        testNotificationBtn.addActionListener {
+            val service = project.service<EventSoundsPluginService>()
+            service.triggerNotification("测试通知", "这是一条测试消息内容")
+        }
+
+        val githubLink = JLabel("<html><a href='https://github.com/antoniofuture/ide-event-sounds'>GitHub 仓库</a></html>")
+        githubLink.cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
+        githubLink.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                try {
+                    Desktop.getDesktop().browse(java.net.URI("https://github.com/antoniofuture/ide-event-sounds"))
+                } catch (ex: Exception) {
+                    Messages.showMessageDialog(project, "无法打开链接: ${ex.message}", "错误", Messages.getErrorIcon())
+                }
+            }
+        })
+
+        val southPanel = JPanel(BorderLayout())
+        southPanel.add(infoLabel, BorderLayout.CENTER)
+        val rightPanel = JPanel(BorderLayout())
+        rightPanel.add(testNotificationBtn, BorderLayout.WEST)
+        rightPanel.add(githubLink, BorderLayout.EAST)
+        southPanel.add(rightPanel, BorderLayout.EAST)
+
         mainPanel.add(enableCheckbox, BorderLayout.NORTH)
         mainPanel.add(tableWithToolbar, BorderLayout.CENTER)
-        mainPanel.add(infoLabel, BorderLayout.SOUTH)
+        mainPanel.add(southPanel, BorderLayout.SOUTH)
     }
 
     fun loadSettings() {
@@ -189,6 +217,15 @@ class EventSoundsConfigPanel(val project: Project) {
         try {
             if (soundPath.startsWith("sounds/")) {
                 val fileName = soundPath.substring("sounds/".length)
+                val resourcePath = "/preset/$fileName"
+                val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
+                if (inputStream != null) {
+                    soundPlayer.playFromStream(inputStream)
+                } else {
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
+                }
+            } else if (soundPath.startsWith("preset/")) {
+                val fileName = soundPath.substring("preset/".length)
                 val resourcePath = "/preset/$fileName"
                 val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
                 if (inputStream != null) {
@@ -281,7 +318,8 @@ class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : 
         "project.opened", "project.closed", "application.starting", "application.loaded",
         "file.created", "file.deleted", "file.moved", "file.renamed", "file.saved",
         "git.commit.success", "git.commit.failed", "git.push.success", "git.push.failed",
-        "git.pull.success", "git.pull.failed", "indexing.started", "indexing.finished"
+        "git.pull.success", "git.pull.failed", "indexing.started", "indexing.finished",
+        "notification"
     )
     
     private var eventKeyCombo = JComboBox(eventKeys.toTypedArray())
@@ -347,6 +385,15 @@ class EventMappingDialog(val project: Project, initialMapping: SoundMapping?) : 
         try {
             if (soundPath.startsWith("sounds/")) {
                 val fileName = soundPath.substring("sounds/".length)
+                val resourcePath = "/preset/$fileName"
+                val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
+                if (inputStream != null) {
+                    soundPlayer.playFromStream(inputStream)
+                } else {
+                    Messages.showMessageDialog(project, "找不到声音文件: $soundPath", "错误", Messages.getWarningIcon())
+                }
+            } else if (soundPath.startsWith("preset/")) {
+                val fileName = soundPath.substring("preset/".length)
                 val resourcePath = "/preset/$fileName"
                 val inputStream = SoundPlayer::class.java.getResourceAsStream(resourcePath)
                 if (inputStream != null) {

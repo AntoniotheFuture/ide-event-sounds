@@ -289,6 +289,14 @@
       "regex": ".*事件声音测试通知.*",
       "isCustom": true,
       "isEnabled": true
+    },
+    {
+      "eventKey": "notification",
+      "soundPath": "sounds/build_success.wav",
+      "name": "通知消息",
+      "regex": "测试",
+      "isCustom": true,
+      "isEnabled": true
     }
   ]
 }
