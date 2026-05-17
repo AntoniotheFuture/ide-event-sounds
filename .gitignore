@@ -22,3 +22,13 @@ Thumbs.db
 # Sound files (we'll add placeholders)
 assets/preset/*.wav
 assets/preset/*.mp3
+packages/vscode/resources/preset/*.wav
+packages/vscode/resources/preset/*.mp3
+
+# VS Code
+node_modules/
+out/
+dist/
+*.vsix
+.vscode-test/
+.vscode/
