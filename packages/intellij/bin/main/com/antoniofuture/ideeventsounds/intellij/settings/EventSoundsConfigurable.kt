@@ -130,12 +130,12 @@ class EventSoundsConfigPanel(val project: Project) {
             service.triggerNotification("测试通知", "这是一条测试消息内容")
         }
 
-        val githubLink = JLabel("<html><a href='https://github.com/antoniofuture/ide-event-sounds'>GitHub 仓库</a></html>")
+        val githubLink = JLabel("<html><a href='https://github.com/antoniothefuture/ide-event-sounds'>GitHub 仓库</a></html>")
         githubLink.cursor = java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR)
         githubLink.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
                 try {
-                    Desktop.getDesktop().browse(java.net.URI("https://github.com/antoniofuture/ide-event-sounds"))
+                    Desktop.getDesktop().browse(java.net.URI("https://github.com/antoniothefuture/ide-event-sounds"))
                 } catch (ex: Exception) {
                     Messages.showMessageDialog(project, "无法打开链接: ${ex.message}", "错误", Messages.getErrorIcon())
                 }

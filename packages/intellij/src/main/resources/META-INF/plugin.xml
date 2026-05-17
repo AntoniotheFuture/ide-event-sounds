@@ -6,10 +6,10 @@
     <name>IDE Event Sounds</name>
 
     <!-- 作者信息从统一配置读取 -->
-    <vendor email="antonioliang@Foxmail.com" url="https://github.com/antoniofuture/ide-event-sounds">Antonio Future</vendor>
+    <vendor email="antonioliang@Foxmail.com" url="https://github.com/antoniothefuture/ide-event-sounds">Antonio Future</vendor>
 
     <!-- 插件仓库链接 -->
-    <url>https://github.com/antoniofuture/ide-event-sounds</url>
+    <url>https://github.com/antoniothefuture/ide-event-sounds</url>
 
     <!-- 描述由 build.gradle.kts 动态注入 -->
     <description><![CDATA[
@@ -21,7 +21,7 @@
         <li>编译完成提示音</li>
         <li>测试通过/失败提示音</li>
     </ul>
-    <p><a href="https://github.com/antoniofuture/ide-event-sounds">GitHub 仓库</a></p>
+    <p><a href="https://github.com/antoniothefuture/ide-event-sounds">GitHub 仓库</a></p>
     ]]></description>
 
     <!-- 变更日志由 build.gradle.kts 动态注入 -->

@@ -96,7 +96,7 @@ tasks {
                 <li>编译完成提示音</li>
                 <li>测试通过/失败提示音</li>
             </ul>
-            <p><a href="https://github.com/antoniofuture/ide-event-sounds">GitHub 仓库</a></p>
+            <p><a href="https://github.com/antoniothefuture/ide-event-sounds">GitHub 仓库</a></p>
         """.trimIndent())
 
         // 动态设置变更日志
