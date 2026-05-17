@@ -9,7 +9,7 @@ import javax.sound.sampled.LineEvent
 import javax.sound.sampled.LineListener
 
 class SoundPlayer {
-    private val configManager = com.antoniofuture.ideeventsounds.core.config.ConfigManager()
+    private val configManager = com.antoniofuture.ideeventsounds.core.config.ConfigManager.instance
     private var currentClip: Clip? = null
     private val lock = Any()
 

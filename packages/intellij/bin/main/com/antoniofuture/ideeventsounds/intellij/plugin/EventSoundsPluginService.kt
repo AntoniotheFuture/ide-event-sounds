@@ -10,7 +10,7 @@ import com.intellij.openapi.diagnostic.logger
 @Service
 class EventSoundsPluginService {
     private val logger = logger<EventSoundsPluginService>()
-    private val configManager = ConfigManager()
+    private val configManager = ConfigManager.instance
     private val eventMatcher = EventMatcher()
     private val soundPlayer = SoundPlayer()
 

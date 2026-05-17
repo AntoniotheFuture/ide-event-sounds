@@ -7,7 +7,11 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class ConfigManager {
+class ConfigManager private constructor() {
+    companion object {
+        val instance: ConfigManager by lazy { ConfigManager() }
+    }
+    
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private var cachedConfig: SoundConfig? = null
     private val lock = ReentrantReadWriteLock()

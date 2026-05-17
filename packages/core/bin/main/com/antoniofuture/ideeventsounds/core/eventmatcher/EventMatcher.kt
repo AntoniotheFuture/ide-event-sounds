@@ -5,7 +5,7 @@ import com.antoniofuture.ideeventsounds.core.soundplayer.SoundPlayer
 import java.util.concurrent.ConcurrentHashMap
 
 class EventMatcher {
-    private val configManager = ConfigManager()
+    private val configManager = ConfigManager.instance
     private val soundPlayer = SoundPlayer()
     private val regexCache = ConcurrentHashMap<String, Regex>()
 
@@ -15,6 +15,11 @@ class EventMatcher {
         // 检查全局开关
         val config = configManager.loadConfig()
         if (!config.enable) {
+            return
+        }
+
+        // 检查单个事件是否启用
+        if (!soundMapping.isEnabled) {
             return
         }
 

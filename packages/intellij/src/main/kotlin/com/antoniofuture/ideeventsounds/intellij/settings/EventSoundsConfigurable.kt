@@ -58,7 +58,7 @@ class EventSoundsConfigurable(private val project: Project) : Configurable {
 }
 
 class EventSoundsConfigPanel(val project: Project) {
-    private val configManager = ConfigManager()
+    private val configManager = ConfigManager.instance
     private val soundPlayer = SoundPlayer()
 
     private var enableCheckbox = JCheckBox("启用插件 (Enable Plugin)")
